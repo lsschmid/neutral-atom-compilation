@@ -229,7 +229,12 @@ class LookaheadCompiler(Compiler):
             #print("size")
             return None
             
-        l2p, p2l = self._initial_mapping(dist_dict, frontier, weighting_function)
+        if self.hardware.positions is not None:
+            l2p = {circuit.qubits[i]: self.hardware.positions[i] for i in range(len(circuit.qubits))}
+            p2l = {self.hardware.positions[i]: circuit.qubits[i] for i in range(len(circuit.qubits))}
+        else:
+            l2p, p2l = self._initial_mapping(dist_dict, frontier, weighting_function)
+            self.hardware.positions = [l2p[i] for i in circuit.qubits]
         if l2p is None:
             #print("no mapping")
             return None

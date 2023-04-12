@@ -52,6 +52,7 @@ class Hardware:
                  num_dimensions: int,
                  dimensions_length: List[int],
                  dimensions_spacing: List[float],
+                 arch_positions: List[List[int]] = None,
                  **kwargs) -> None:
 
         assert len(dimensions_length) == num_dimensions
@@ -75,8 +76,15 @@ class Hardware:
         self.num_dimensions = num_dimensions
         self.qiskit_qubits = qiskit.circuit.QuantumRegister(len(hardware_qubits))
         self.hardware_qubits = []
+        self.positions = None
+        if arch_positions is not None:
+            arch_positions = [tuple(pos[:num_dimensions]) for pos in arch_positions]
+            self.positions = {}
         for index, qubit_tuple in enumerate(hardware_qubits):
             hwq = HardwareQubit(tuple(qubit_tuple), self.qiskit_qubits[index])
+            if arch_positions is not None:
+                if tuple(qubit_tuple) in arch_positions:
+                    self.positions[arch_positions.index(tuple(qubit_tuple))] = hwq
             self.qiskit_to_hardware[self.qiskit_qubits[index]] = hwq
             self.hardware_to_qiskit[hwq] = self.qiskit_qubits[index]
             self.hardware_loc_to_obj[tuple(qubit_tuple)] = hwq
